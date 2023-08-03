@@ -13,7 +13,7 @@ def get_data_with_session(session_id):
     url = "https://inbox.goverland.xyz/dao/top?limit=1"
 
     headers = {
-        "Cookie": f"session_id={'f1543764-a7c5-48d1-8438-aa4f08c68517'}"
+        "Cookie": f"session_id={'Insert your session id'}"
     }
 
     try:
@@ -68,10 +68,10 @@ async def on_ready():
 
     # Start the listening task
     client.loop.create_task(listen_to_url(
-        "f1543764-a7c5-48d1-8438-aa4f08c68517"))
+        "Insert your session id"))
 
 if __name__ == "__main__":
     # Replace this with your actual Discord bot token
-    token = "MTEzNTQ4OTkyMzk5NTE1MjQzNA.Gyvp-K.IDjKt-uNkZ3PMKBdzQQCu2JhqHfKVMeOWyh51A"
+    token = "Insert bot token"
 
     client.run(token)
