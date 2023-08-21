@@ -38,6 +38,24 @@ def get_data_with_session(session_id):
         return None
 
 
+def mark_item_as_read(feed_id):
+    base_url = "https://inbox.goverland.xyz/feed"
+    url = f"{base_url}/{feed_id}/mark-as-read"
+
+    headers = {
+        "Authorization": govid
+    }
+
+    response = requests.post(url, headers=headers)
+
+    if response.status_code == 200:
+        return True  # Feed marked as read successfully
+    else:
+        print("Failed to mark feed as read. Status code:", response.status_code)
+        print("Response content:", response.text)
+        return False
+
+
 async def send_message_to_discord(channel, title, link):
     message = f"New proposal: [{title}]({link})"
     await channel.send(message)
@@ -53,11 +71,14 @@ async def listen_to_url(session_id):
             title = data["proposal"][0]["title"]
             link = data["proposal"][0]["link"]
             formatted_url = urllib.parse.quote(link, safe=':/#')
+            feed_id = data['id'][0]
 
             # print(f"New data: {title}")
 
             # Send the new event message to Discord chat
             await send_message_to_discord(channel, title, formatted_url)
+
+            mark_item_as_read(feed_id)
 
         except Exception as e:
             print(f"Error occurred: {e}")
