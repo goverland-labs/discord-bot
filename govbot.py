@@ -1,19 +1,28 @@
 import asyncio
 import discord
 import requests
+import os
+import pandas as pd
+import urllib.parse
+from dotenv import load_dotenv
 # import time
+
+load_dotenv()
 
 intents = discord.Intents.default()
 intents.message_content = True
 
 client = discord.Client(intents=intents)
 
+govid = os.getenv("GOVID")
+discordtoken = os.getenv("DISCORD_TOKEN")
+
 
 def get_data_with_session(session_id):
-    url = "https://inbox.goverland.xyz/dao/top?limit=1"
+    url = "https://inbox.goverland.xyz/feed?limit=1&offset=0&unread="
 
     headers = {
-        "Cookie": f"session_id={'Insert your session id'}"
+        "Authorization": govid
     }
 
     try:
@@ -21,6 +30,7 @@ def get_data_with_session(session_id):
         response.raise_for_status()  # Check for any HTTP errors
 
         data = response.json()  # Assuming the response is in JSON format
+        # print(data)
         return data
 
     except requests.RequestException as e:
@@ -28,8 +38,8 @@ def get_data_with_session(session_id):
         return None
 
 
-async def send_message_to_discord(channel, data):
-    message = f"New event: {data}"
+async def send_message_to_discord(channel, title, link):
+    message = f"New proposal: [{title}]({link})"
     await channel.send(message)
 
 
@@ -38,18 +48,16 @@ async def listen_to_url(session_id):
 
     while True:
         try:
-            data = get_data_with_session(session_id)
+            rawdata = get_data_with_session(session_id)
+            data = pd.DataFrame(rawdata)
+            title = data["proposal"][0]["title"]
+            link = data["proposal"][0]["link"]
+            formatted_url = urllib.parse.quote(link, safe=':/#')
 
-            # Check if new data is available
-            if data and data != last_data:
-                print(f"New data: {data}")
-                last_data = data
+            # print(f"New data: {title}")
 
-                # Send the "hello" message to Discord chat
-                await send_message_to_discord(channel, "hello")
-
-                # Send the new event message to Discord chat
-                await send_message_to_discord(channel, data)
+            # Send the new event message to Discord chat
+            await send_message_to_discord(channel, title, formatted_url)
 
         except Exception as e:
             print(f"Error occurred: {e}")
@@ -67,11 +75,10 @@ async def on_ready():
     channel = client.get_channel(client.guilds[0].text_channels[0].id)
 
     # Start the listening task
-    client.loop.create_task(listen_to_url(
-        "Insert your session id"))
+    client.loop.create_task(listen_to_url(govid))
 
 if __name__ == "__main__":
     # Replace this with your actual Discord bot token
-    token = "Insert bot token"
+    token = discordtoken
 
     client.run(token)
