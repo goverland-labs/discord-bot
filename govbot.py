@@ -77,6 +77,27 @@ async def gov_stop(ctx):
     await ctx.send("Goverland bot deactivated. No longer listening for proposals.")
 
 
+@bot.command()
+async def gov_add_dao(ctx, dao_identifier: str):
+    server_id = ctx.guild.id
+    query = "SELECT sessionid FROM subs WHERE serverid = ?"
+    res = cur.execute(query, (server_id,))
+    data = res.fetchone()
+    session_id = data[0]
+
+    url = "https://inbox.goverland.xyz/subscriptions"
+    headers = {
+        "Authorization": session_id
+    }
+    data = {
+        "dao": dao_identifier
+    }
+    response = requests.post(url, headers=headers, json=data)
+    response.raise_for_status()  # Check for any HTTP errors
+
+    await ctx.send(f"You specified the company name: {dao_identifier}")
+
+
 def subscribe():
     url = "https://inbox.goverland.xyz/auth/guest"
 
@@ -177,6 +198,7 @@ async def on_ready():
         query = "SELECT sessionid FROM subs WHERE serverid = ?"
         res = cur.execute(query, (server_id,))
         data = res.fetchone()
+        session_id = data[0]
 
         if data:
             session_id = data[0]
