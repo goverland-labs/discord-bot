@@ -106,7 +106,7 @@ def get_data_with_session(session_id):
     url = "https://inbox.goverland.xyz/feed?limit=1&offset=0&unread="
 
     headers = {
-        "Authorization": govid
+        "Authorization": session_id
     }
 
     try:
@@ -122,12 +122,12 @@ def get_data_with_session(session_id):
         return None
 
 
-def mark_item_as_read(feed_id):
+def mark_item_as_read(feed_id, session_id):
     base_url = "https://inbox.goverland.xyz/feed"
     url = f"{base_url}/{feed_id}/mark-as-read"
 
     headers = {
-        "Authorization": govid
+        "Authorization": session_id
     }
 
     response = requests.post(url, headers=headers)
@@ -171,7 +171,7 @@ async def listen_to_url(session_id):
                     # Send the new event message to Discord chat
                     await send_message_to_discord(channel, title, formatted_url)
 
-                    mark_item_as_read(feed_id)
+                    mark_item_as_read(feed_id, session_id)
                 else:
                     print(
                         "The provided datetime is not higher than current timestamp minus one day.")
