@@ -14,3 +14,5 @@ Once added, user has a number of commands available:
 -Gov_start initiates sending of proposals as per subscribed DAOs to the server. Sent messages contain proposals name and link to snapshot. Once proposal is sent, it is marked as read for a particular session_id. Service only sends proposals which are posted within a day not to inform about aold ones
 
 -Gov_stop stops feed of proposals
+
+Python code dbcreate.ipynb needs to be run once on the local machine to create db which will be used then by bot. 
