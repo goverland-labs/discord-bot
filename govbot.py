@@ -29,7 +29,7 @@ async def gov_sub(ctx):
     server_id = ctx.guild.id
     print(server_id)
 
-    query = "SELECT serverid FROM subs WHERE serverid = ?"
+    query = "SELECT distinct(serverid) FROM subs WHERE serverid = ?"
     res = cur.execute(query, (server_id,))
     check = res.fetchone() is True
 
@@ -59,7 +59,7 @@ async def gov_sub(ctx):
 async def gov_start(ctx):
     server_id = ctx.guild.id
 
-    query = "SELECT serverid FROM subs WHERE serverid = ?"
+    query = "SELECT distinct(serverid) FROM subs WHERE serverid = ?"
     res = cur.execute(query, (server_id,))
     check = res.fetchone() is True
 
@@ -81,7 +81,7 @@ async def gov_stop(ctx):
 @bot.command()
 async def gov_add_dao(ctx, dao_identifier: str):
     server_id = ctx.guild.id
-    query = "SELECT sessionid FROM subs WHERE serverid = ?"
+    query = "SELECT distinct(sessionid) FROM subs WHERE serverid = ?"
     res = cur.execute(query, (server_id,))
     data = res.fetchone()
     session_id = data[0]
@@ -102,7 +102,7 @@ async def gov_add_dao(ctx, dao_identifier: str):
 @bot.command()
 async def gov_remove_dao(ctx, dao_identifier: str):
     server_id = ctx.guild.id
-    query = "SELECT sessionid FROM subs WHERE serverid = ?"
+    query = "SELECT distinct(sessionid) FROM subs WHERE serverid = ?"
     res = cur.execute(query, (server_id,))
     data = res.fetchone()
     session_id = data[0]
@@ -210,7 +210,7 @@ async def on_ready():
         channel = bot.get_channel(bot.guilds[0].text_channels[0].id)
 
         server_id = guild.id
-        query = "SELECT sessionid FROM subs WHERE serverid = ?"
+        query = "SELECT distinct(sessionid) FROM subs WHERE serverid = ?"
         res = cur.execute(query, (server_id,))
         data = res.fetchone()
 
