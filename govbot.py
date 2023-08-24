@@ -99,8 +99,22 @@ async def gov_add_dao(ctx, dao_identifier: str):
     await ctx.send(f"You subscribed to DAO: {dao_identifier}")
 
 
-def subscribe():
-    url = "https://inbox.goverland.xyz/auth/guest"
+@bot.command()
+async def gov_remove_dao(ctx, dao_identifier: str):
+    server_id = ctx.guild.id
+    query = "SELECT sessionid FROM subs WHERE serverid = ?"
+    res = cur.execute(query, (server_id,))
+    data = res.fetchone()
+    session_id = data[0]
+
+    url = f"https://inbox.goverland.xyz/subscriptions/{dao_identifier}"
+    headers = {
+        "Authorization": session_id
+    }
+    response = requests.delete(url, headers=headers)
+    response.raise_for_status()  # Check for any HTTP errors
+
+    await ctx.send(f"You unsubscribed from DAO: {dao_identifier}")
 
 
 def get_data_with_session(session_id):
