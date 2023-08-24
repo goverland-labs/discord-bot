@@ -34,8 +34,6 @@ async def gov_sub(ctx):
     check = res.fetchone() is True
 
     if check:
-        await ctx.send("You are already subscribed")
-    else:
         value = server_id
         result_string = f"{value}"
         url = "https://inbox.goverland.xyz/auth/guest"
@@ -52,6 +50,9 @@ async def gov_sub(ctx):
         cur.execute(query, (server_id, session_id))
         con.commit()
         await ctx.send("Successfully subscribed to Goverland bot")
+
+    else:
+        await ctx.send("You are already subscribed")
 
 
 @bot.command()
@@ -95,7 +96,7 @@ async def gov_add_dao(ctx, dao_identifier: str):
     response = requests.post(url, headers=headers, json=data)
     response.raise_for_status()  # Check for any HTTP errors
 
-    await ctx.send(f"You specified the company name: {dao_identifier}")
+    await ctx.send(f"You subscribed to DAO: {dao_identifier}")
 
 
 def subscribe():
@@ -153,8 +154,8 @@ async def listen_to_url(session_id):
             try:
                 rawdata = get_data_with_session(session_id)
                 data = pd.DataFrame(rawdata)
-
-                provided_datetime = data["created_at"]
+                print(data)
+                provided_datetime = str(data["created_at"][0])
                 provided_datetime_obj = datetime.strptime(
                     provided_datetime, '%Y-%m-%dT%H:%M:%SZ')
                 current_datetime = datetime.utcnow()
@@ -198,13 +199,13 @@ async def on_ready():
         query = "SELECT sessionid FROM subs WHERE serverid = ?"
         res = cur.execute(query, (server_id,))
         data = res.fetchone()
-        session_id = data[0]
 
         if data:
             session_id = data[0]
+            print(session_id)
             for text_channel in guild.text_channels:
                 # Start the listening task
-                bot.loop.create_task(listen_to_url(session_id, text_channel))
+                bot.loop.create_task(listen_to_url(session_id))
 
 if __name__ == "__main__":
     # Replace this with your actual Discord bot token
