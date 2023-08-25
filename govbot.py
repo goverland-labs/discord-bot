@@ -78,13 +78,28 @@ async def gov_stop(ctx):
     await ctx.send("Goverland bot deactivated. No longer listening for proposals.")
 
 
+def search_dao_key(dao, session_id):
+    url = f"https://inbox.goverland.xyz/dao?query={dao}&offset=0&limit=1"
+    headers = {
+        "Authorization": session_id
+    }
+    response = requests.get(url, headers=headers)
+    response.raise_for_status()  # Check for any HTTP errors
+    data = response.json()
+    data = pd.DataFrame(data)
+    daoid = data['id'][0]
+    return daoid
+
+
 @bot.command()
-async def gov_add_dao(ctx, dao_identifier: str):
+async def gov_add_dao(ctx, dao_name: str):
     server_id = ctx.guild.id
     query = "SELECT distinct(sessionid) FROM subs WHERE serverid = ?"
     res = cur.execute(query, (server_id,))
     data = res.fetchone()
     session_id = data[0]
+
+    dao_identifier = search_dao_key(dao_name, session_id)
 
     url = "https://inbox.goverland.xyz/subscriptions"
     headers = {
@@ -100,12 +115,14 @@ async def gov_add_dao(ctx, dao_identifier: str):
 
 
 @bot.command()
-async def gov_remove_dao(ctx, dao_identifier: str):
+async def gov_remove_dao(ctx, dao_name: str):
     server_id = ctx.guild.id
     query = "SELECT distinct(sessionid) FROM subs WHERE serverid = ?"
     res = cur.execute(query, (server_id,))
     data = res.fetchone()
     session_id = data[0]
+
+    dao_identifier = search_dao_key(dao_name, session_id)
 
     url = f"https://inbox.goverland.xyz/subscriptions/{dao_identifier}"
     headers = {
