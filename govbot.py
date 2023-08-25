@@ -92,6 +92,28 @@ def search_dao_key(dao, session_id):
 
 
 @bot.command()
+async def search_dao(ctx, dao_name: str):
+    server_id = ctx.guild.id
+    query = "SELECT distinct(sessionid) FROM subs WHERE serverid = ?"
+    res = cur.execute(query, (server_id,))
+    data = res.fetchone()
+    session_id = data[0]
+
+    url = f"https://inbox.goverland.xyz/dao?query={dao_name}&offset=0&limit=50"
+    headers = {
+        "Authorization": session_id
+    }
+    response = requests.get(url, headers=headers)
+    response.raise_for_status()  # Check for any HTTP errors
+    data = response.json()
+    data = pd.DataFrame(data)
+    searchres = data[['name', 'website']]
+    df_str = searchres.to_string(index=False)
+
+    await ctx.send(f"```\n{df_str}\n```")
+
+
+@bot.command()
 async def gov_add_dao(ctx, dao_name: str):
     server_id = ctx.guild.id
     query = "SELECT distinct(sessionid) FROM subs WHERE serverid = ?"
