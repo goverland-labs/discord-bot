@@ -16,3 +16,8 @@ Once added, user has a number of commands available:
 -Gov_stop stops feed of proposals
 
 Python code dbcreate.ipynb needs to be run once on the local machine to create db which will be used then by bot. 
+
+# Pip install
+
+discord-py-interatcions
+discord-components
