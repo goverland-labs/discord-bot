@@ -22,3 +22,5 @@ Python code dbcreate.ipynb needs to be run once on the local machine to create d
 discord-py-interatcions
 
 discord-components
+
+discord.py
