@@ -1,6 +1,7 @@
 import asyncio
 import discord
 from discord.ext import commands
+import discord
 import requests
 import os
 import pandas as pd
@@ -13,6 +14,8 @@ load_dotenv()
 
 intents = discord.Intents.default()
 intents.message_content = True
+intents.typing = False
+intents.presences = False
 
 govid = os.getenv("GOVID")
 discordtoken = os.getenv("DISCORD_TOKEN")
@@ -22,6 +25,17 @@ listening = False
 
 con = sqlite3.connect("subs.db")
 cur = con.cursor()
+
+
+@bot.command()
+async def gov_help(ctx):
+    await ctx.send("The following commands are available: \n"
+                   "gov_sub - needs to be called once to generate subscription for your server \n"
+                   "gov_start - actviate to start sending notifications \n"
+                   "gov_stop - stops sending notifications till resumed \n"
+                   "search_dao - helps search for the DAO you need to subscribe. Search word needs to be specified such as !search_dao_key 'search word' \n"
+                   "add_dao - adds subscription to a particular dao to notifications feed. Format !add_dao 'name' \n"
+                   "remove_dao - removes subscription to a particular dao from notifications feed. Format !remove_dao 'name'")
 
 
 @bot.command()
@@ -99,7 +113,7 @@ async def search_dao(ctx, dao_name: str):
     data = res.fetchone()
     session_id = data[0]
 
-    url = f"https://inbox.goverland.xyz/dao?query={dao_name}&offset=0&limit=50"
+    url = f"https://inbox.goverland.xyz/dao?query={dao_name}&offset=0&limit=5"
     headers = {
         "Authorization": session_id
     }
@@ -111,10 +125,11 @@ async def search_dao(ctx, dao_name: str):
     df_str = searchres.to_string(index=False)
 
     await ctx.send(f"```\n{df_str}\n```")
+    await ctx.send(f"Please subscribe to chosen DAO calling the gov_add_dao command in the following format - !gov_add_dao 'name from the list above'")
 
 
 @bot.command()
-async def gov_add_dao(ctx, dao_name: str):
+async def add_dao(ctx, dao_name: str):
     server_id = ctx.guild.id
     query = "SELECT distinct(sessionid) FROM subs WHERE serverid = ?"
     res = cur.execute(query, (server_id,))
@@ -137,7 +152,7 @@ async def gov_add_dao(ctx, dao_name: str):
 
 
 @bot.command()
-async def gov_remove_dao(ctx, dao_name: str):
+async def remove_dao(ctx, dao_name: str):
     server_id = ctx.guild.id
     query = "SELECT distinct(sessionid) FROM subs WHERE serverid = ?"
     res = cur.execute(query, (server_id,))
