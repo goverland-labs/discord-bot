@@ -1,26 +1,35 @@
-# Discord_bot
-Fetches data from goverland server and sends to discord channels. Used for further promotion of our solution
+# Goverland Discord Bot
 
-Principles of work:
+The bot allows to subscribe for updates from different DAOs.
 
-Bot can be added on any server.
+## Configuration
 
-Once added, user has a number of commands available:
+A Python 3.10+ environment.
 
--Gov_sub initiates creation of session_id for each server plus adds server_id and session_id to local databse for further use. This is the first command that user needs to call to start using the service
+```
+python3 -m venv .env
+source .env/bin/activate
+pip install -r requirements.txt
+```
 
--add_dao allows user to add subscription to a particular dao by specifying correct dao id such as "868f59db-4e45-498f-a87a-3efa9db0c92c"
+### Code contribution
 
--Gov_start initiates sending of proposals as per subscribed DAOs to the server. Sent messages contain proposals name and link to snapshot. Once proposal is sent, it is marked as read for a particular session_id. Service only sends proposals which are posted within a day not to inform about aold ones
+1. Create an issue describing a bug or feature
+2. Fork the repository and create a pull request to the `main` branch
+3. Please use [Black](https://pypi.org/project/black/) code formatter
 
--Gov_stop stops feed of proposals
+## Usage
 
-Python code dbcreate.ipynb needs to be run once on the local machine to create db which will be used then by bot. 
+TODO: update after docker file is ready
 
-# Pip install
+### Create a local sqlite database
 
-discord-py-interatcions
+```
+python -m src.database.create_db
+```
 
-discord-components
+### Run the bot
 
-discord.py
+```
+python -m src.run
+```
