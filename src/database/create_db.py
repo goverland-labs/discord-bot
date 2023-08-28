@@ -1,5 +1,5 @@
-from database.models import Base
-from database.database import db
+from src.database.models import Base
+from src.database.database import db
 
 
 def main():
