@@ -1,7 +1,7 @@
 import asyncio
 import discord
 from discord.ext import commands
-import discord
+from discord.ui import Button, View
 import requests
 import os
 import pandas as pd
@@ -121,11 +121,40 @@ async def search_dao(ctx, dao_name: str):
     response.raise_for_status()  # Check for any HTTP errors
     data = response.json()
     data = pd.DataFrame(data)
-    searchres = data[['name', 'website']]
-    df_str = searchres.to_string(index=False)
 
-    await ctx.send(f"```\n{df_str}\n```")
-    await ctx.send(f"Please subscribe to chosen DAO calling the gov_add_dao command in the following format - !gov_add_dao 'name from the list above'")
+    for index, row in data.iterrows():
+
+        df_str = data['name'][index]
+        button = Button(label=df_str, custom_id=df_str)
+
+        async def button_callback(interaction):
+            server_id = ctx.guild.id
+            query = "SELECT distinct(sessionid) FROM subs WHERE serverid = ?"
+            res = cur.execute(query, (server_id,))
+            data = res.fetchone()
+            session_id = data[0]
+            dao_name = interaction.data['custom_id']
+
+            dao_identifier = search_dao_key(dao_name, session_id)
+
+            url = "https://inbox.goverland.xyz/subscriptions"
+            headers = {
+                "Authorization": session_id
+            }
+            data = {
+                "dao": dao_identifier
+            }
+            response = requests.post(url, headers=headers, json=data)
+            response.raise_for_status()  # Check for any HTTP errors
+
+            # await ctx.send(f"You subscribed to DAO: {dao_name}")
+            await interaction.response.send_message(f"You subscribed to DAO: {dao_name}")
+
+        button.callback = button_callback
+
+        view = View()
+        view.add_item(button)
+        await ctx.send(view=view)
 
 
 @bot.command()
