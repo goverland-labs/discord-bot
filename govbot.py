@@ -14,10 +14,10 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # intents = discord.Intents.default()
-intents = discord.Intents.all()
 # intents.message_content = True
 # intents.typing = False
 # intents.presences = False
+intents = discord.Intents.all()
 
 govid = os.getenv("GOVID")
 discordtoken = os.getenv("DISCORD_TOKEN")
@@ -244,7 +244,7 @@ async def search_dao(interaction: discord.Interaction, dao_name: str):
             await interaction.followup.send(view=view)
 
 
-@bot.tree.command()
+@bot.tree.command(name="add_dao")
 async def add_dao(interaction: discord.Interaction, dao_name: str):
     server_id = interaction.guild.id
     query = "SELECT distinct(sessionid) FROM subs WHERE serverid = ?"
@@ -267,7 +267,7 @@ async def add_dao(interaction: discord.Interaction, dao_name: str):
     await interaction.response.send_message(f"You subscribed to DAO: {dao_identifier}")
 
 
-@bot.tree.command()
+@bot.tree.command(name="remove_dao")
 async def remove_dao(interaction: discord.Interaction, dao_name: str):
     server_id = interaction.guild.id
     query = "SELECT distinct(sessionid) FROM subs WHERE serverid = ?"
@@ -314,4 +314,5 @@ if __name__ == "__main__":
     # Replace this with your actual Discord bot token
     token = discordtoken
     bot.run(token)
+
 
