@@ -110,6 +110,19 @@ async def listen_to_url(session_id):
         await asyncio.sleep(10)
 
 
+def search_dao_key(dao, session_id):
+    url = f"https://inbox.goverland.xyz/dao?query={dao}&offset=0&limit=1"
+    headers = {
+        "Authorization": session_id
+    }
+    response = requests.get(url, headers=headers)
+    response.raise_for_status()  # Check for any HTTP errors
+    data = response.json()
+    data = pd.DataFrame(data)
+    daoid = data['id'][0]
+    return daoid
+
+
 @bot.tree.command(name="help")
 async def gov_help(interaction: discord.Interaction):
     await interaction.response.send_message("The following commands are available: \n"
@@ -152,45 +165,32 @@ async def gov_sub(interaction: discord.Interaction):
         await interaction.response.send_message("You are already subscribed")
 
 
-@bot.command()
-async def gov_start(ctx):
-    server_id = ctx.guild.id
+@bot.tree.command(name="start")
+async def gov_start(interaction: discord.Interaction):
+    server_id = interaction.guild.id
 
     query = "SELECT distinct(serverid) FROM subs WHERE serverid = ?"
     res = cur.execute(query, (server_id,))
     check = res.fetchone() is True
 
     if check:
-        await ctx.send("You are already subscribed")
+        await interaction.response.send_message("You are already subscribed")
     else:
         global listening  # Use the global flag
         listening = True
-        await ctx.send("Goverland bot activated. Now listening for proposals.")
+        await interaction.response.send_message("Goverland bot activated. Now listening for proposals.")
 
 
-@bot.command()
-async def gov_stop(ctx):
+@bot.tree.command(name="stop")
+async def gov_stop(interaction: discord.Interaction):
     global listening  # Use the global flag
     listening = False
-    await ctx.send("Goverland bot deactivated. No longer listening for proposals.")
+    await interaction.response.send_message("Goverland bot deactivated. No longer listening for proposals.")
 
 
-def search_dao_key(dao, session_id):
-    url = f"https://inbox.goverland.xyz/dao?query={dao}&offset=0&limit=1"
-    headers = {
-        "Authorization": session_id
-    }
-    response = requests.get(url, headers=headers)
-    response.raise_for_status()  # Check for any HTTP errors
-    data = response.json()
-    data = pd.DataFrame(data)
-    daoid = data['id'][0]
-    return daoid
-
-
-@bot.command()
-async def search_dao(ctx, dao_name: str):
-    server_id = ctx.guild.id
+@bot.tree.command(name="search")
+async def search_dao(interaction: discord.Interaction, dao_name: str):
+    server_id = interaction.guild.id
     query = "SELECT distinct(sessionid) FROM subs WHERE serverid = ?"
     res = cur.execute(query, (server_id,))
     data = res.fetchone()
@@ -211,7 +211,7 @@ async def search_dao(ctx, dao_name: str):
         button = Button(label=df_str, custom_id=df_str)
 
         async def button_callback(interaction):
-            server_id = ctx.guild.id
+            server_id = interaction.guild.id
             query = "SELECT distinct(sessionid) FROM subs WHERE serverid = ?"
             res = cur.execute(query, (server_id,))
             data = res.fetchone()
@@ -237,12 +237,16 @@ async def search_dao(ctx, dao_name: str):
 
         view = View()
         view.add_item(button)
-        await ctx.send(view=view)
+
+        if index == 0:
+            await interaction.response.send_message(view=view)
+        else:
+            await interaction.followup.send(view=view)
 
 
-@bot.command()
-async def add_dao(ctx, dao_name: str):
-    server_id = ctx.guild.id
+@bot.tree.command()
+async def add_dao(interaction: discord.Interaction, dao_name: str):
+    server_id = interaction.guild.id
     query = "SELECT distinct(sessionid) FROM subs WHERE serverid = ?"
     res = cur.execute(query, (server_id,))
     data = res.fetchone()
@@ -260,12 +264,12 @@ async def add_dao(ctx, dao_name: str):
     response = requests.post(url, headers=headers, json=data)
     response.raise_for_status()  # Check for any HTTP errors
 
-    await ctx.send(f"You subscribed to DAO: {dao_identifier}")
+    await interaction.response.send_message(f"You subscribed to DAO: {dao_identifier}")
 
 
-@bot.command()
-async def remove_dao(ctx, dao_name: str):
-    server_id = ctx.guild.id
+@bot.tree.command()
+async def remove_dao(interaction: discord.Interaction, dao_name: str):
+    server_id = interaction.guild.id
     query = "SELECT distinct(sessionid) FROM subs WHERE serverid = ?"
     res = cur.execute(query, (server_id,))
     data = res.fetchone()
@@ -280,7 +284,7 @@ async def remove_dao(ctx, dao_name: str):
     response = requests.delete(url, headers=headers)
     response.raise_for_status()  # Check for any HTTP errors
 
-    await ctx.send(f"You unsubscribed from DAO: {dao_identifier}")
+    await interaction.response.send_message(f"You unsubscribed from DAO: {dao_identifier}")
 
 
 @bot.event
@@ -304,11 +308,10 @@ async def on_ready():
         if data:
             session_id = data[0]
             print(session_id)
-            for text_channel in guild.text_channels:
-                # Start the listening task
-                bot.loop.create_task(listen_to_url(session_id))
+            bot.loop.create_task(listen_to_url(session_id))
 
 if __name__ == "__main__":
     # Replace this with your actual Discord bot token
     token = discordtoken
     bot.run(token)
+
