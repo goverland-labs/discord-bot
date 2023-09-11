@@ -2,6 +2,7 @@ import asyncio
 import discord
 from discord.ext import commands
 from discord.ui import Button, View
+from discord import app_commands
 import requests
 import os
 import pandas as pd
@@ -12,10 +13,11 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-intents = discord.Intents.default()
-intents.message_content = True
-intents.typing = False
-intents.presences = False
+# intents = discord.Intents.default()
+intents = discord.Intents.all()
+# intents.message_content = True
+# intents.typing = False
+# intents.presences = False
 
 govid = os.getenv("GOVID")
 discordtoken = os.getenv("DISCORD_TOKEN")
@@ -27,20 +29,101 @@ con = sqlite3.connect("subs.db")
 cur = con.cursor()
 
 
-@bot.command()
-async def gov_help(ctx):
-    await ctx.send("The following commands are available: \n"
-                   "gov_sub - needs to be called once to generate subscription for your server \n"
-                   "gov_start - actviate to start sending notifications \n"
-                   "gov_stop - stops sending notifications till resumed \n"
-                   "search_dao - helps search for the DAO you need to subscribe. Search word needs to be specified such as !search_dao_key 'search word' \n"
-                   "add_dao - adds subscription to a particular dao to notifications feed. Format !add_dao 'name' \n"
-                   "remove_dao - removes subscription to a particular dao from notifications feed. Format !remove_dao 'name'")
+def get_data_with_session(session_id):
+    url = "https://inbox.goverland.xyz/feed?limit=1&offset=0&unread="
+
+    headers = {
+        "Authorization": session_id
+    }
+
+    try:
+        response = requests.get(url, headers=headers)
+        response.raise_for_status()  # Check for any HTTP errors
+
+        data = response.json()  # Assuming the response is in JSON format
+        # print(data)
+        return data
+
+    except requests.RequestException as e:
+        print(f"Error occurred while fetching data: {e}")
+        return None
 
 
-@bot.command()
-async def gov_sub(ctx):
-    server_id = ctx.guild.id
+def mark_item_as_read(feed_id, session_id):
+    base_url = "https://inbox.goverland.xyz/feed"
+    url = f"{base_url}/{feed_id}/mark-as-read"
+
+    headers = {
+        "Authorization": session_id
+    }
+
+    response = requests.post(url, headers=headers)
+
+    if response.status_code == 200:
+        return True  # Feed marked as read successfully
+    else:
+        print("Failed to mark feed as read. Status code:", response.status_code)
+        print("Response content:", response.text)
+        return False
+
+
+async def send_message_to_discord(channel, title, link):
+    print(channel)
+    message = f"New proposal: [{title}]({link})"
+    await channel.send(message)
+
+
+async def listen_to_url(session_id):
+
+    while True:
+        if listening:
+            try:
+                rawdata = get_data_with_session(session_id)
+                data = pd.DataFrame(rawdata)
+                print(data)
+                provided_datetime = str(data["created_at"][0])
+                provided_datetime_obj = datetime.strptime(
+                    provided_datetime, '%Y-%m-%dT%H:%M:%SZ')
+                current_datetime = datetime.utcnow()
+                one_day_ago = current_datetime - timedelta(days=1)
+
+                if provided_datetime_obj > one_day_ago:
+                    title = data["proposal"][0]["title"]
+                    link = data["proposal"][0]["link"]
+                    formatted_url = urllib.parse.quote(link, safe=':/#')
+                    feed_id = data['id'][0]
+
+                    # print(f"New data: {title}")
+
+                    # Send the new event message to Discord chat
+                    await send_message_to_discord(channel, title, formatted_url)
+
+                    mark_item_as_read(feed_id, session_id)
+                else:
+                    print(
+                        "The provided datetime is not higher than current timestamp minus one day.")
+
+            except Exception as e:
+                print(f"Error occurred: {e}")
+
+            # Set the interval (in seconds) to wait before checking for updates
+        await asyncio.sleep(10)
+
+
+@bot.tree.command(name="help")
+async def gov_help(interaction: discord.Interaction):
+    await interaction.response.send_message("The following commands are available: \n"
+                                            "gov_sub - needs to be called once to generate subscription for your server \n"
+                                            "gov_start - actviate to start sending notifications \n"
+                                            "gov_stop - stops sending notifications till resumed \n"
+                                            "search_dao - helps search for the DAO you need to subscribe. Search word needs to be specified such as !search_dao_key 'search word' \n"
+                                            "add_dao - adds subscription to a particular dao to notifications feed. Format !add_dao 'name' \n"
+                                            "remove_dao - removes subscription to a particular dao from notifications feed. Format !remove_dao 'name'")
+
+
+@bot.tree.command(name="sub")
+async def gov_sub(interaction: discord.Interaction):
+    server_id = interaction.guild.id
     print(server_id)
 
     query = "SELECT distinct(serverid) FROM subs WHERE serverid = ?"
@@ -63,10 +146,10 @@ async def gov_sub(ctx):
         query = "INSERT INTO subs (serverid, sessionid) VALUES (?, ?)"
         cur.execute(query, (server_id, session_id))
         con.commit()
-        await ctx.send("Successfully subscribed to Goverland bot")
+        await interaction.response.send_message("Successfully subscribed to Goverland bot")
 
     else:
-        await ctx.send("You are already subscribed")
+        await interaction.response.send_message("You are already subscribed")
 
 
 @bot.command()
@@ -200,89 +283,10 @@ async def remove_dao(ctx, dao_name: str):
     await ctx.send(f"You unsubscribed from DAO: {dao_identifier}")
 
 
-def get_data_with_session(session_id):
-    url = "https://inbox.goverland.xyz/feed?limit=1&offset=0&unread="
-
-    headers = {
-        "Authorization": session_id
-    }
-
-    try:
-        response = requests.get(url, headers=headers)
-        response.raise_for_status()  # Check for any HTTP errors
-
-        data = response.json()  # Assuming the response is in JSON format
-        # print(data)
-        return data
-
-    except requests.RequestException as e:
-        print(f"Error occurred while fetching data: {e}")
-        return None
-
-
-def mark_item_as_read(feed_id, session_id):
-    base_url = "https://inbox.goverland.xyz/feed"
-    url = f"{base_url}/{feed_id}/mark-as-read"
-
-    headers = {
-        "Authorization": session_id
-    }
-
-    response = requests.post(url, headers=headers)
-
-    if response.status_code == 200:
-        return True  # Feed marked as read successfully
-    else:
-        print("Failed to mark feed as read. Status code:", response.status_code)
-        print("Response content:", response.text)
-        return False
-
-
-async def send_message_to_discord(channel, title, link):
-    print(channel)
-    message = f"New proposal: [{title}]({link})"
-    await channel.send(message)
-
-
-async def listen_to_url(session_id):
-
-    while True:
-        if listening:
-            try:
-                rawdata = get_data_with_session(session_id)
-                data = pd.DataFrame(rawdata)
-                print(data)
-                provided_datetime = str(data["created_at"][0])
-                provided_datetime_obj = datetime.strptime(
-                    provided_datetime, '%Y-%m-%dT%H:%M:%SZ')
-                current_datetime = datetime.utcnow()
-                one_day_ago = current_datetime - timedelta(days=1)
-
-                if provided_datetime_obj > one_day_ago:
-                    title = data["proposal"][0]["title"]
-                    link = data["proposal"][0]["link"]
-                    formatted_url = urllib.parse.quote(link, safe=':/#')
-                    feed_id = data['id'][0]
-
-                    # print(f"New data: {title}")
-
-                    # Send the new event message to Discord chat
-                    await send_message_to_discord(channel, title, formatted_url)
-
-                    mark_item_as_read(feed_id, session_id)
-                else:
-                    print(
-                        "The provided datetime is not higher than current timestamp minus one day.")
-
-            except Exception as e:
-                print(f"Error occurred: {e}")
-
-            # Set the interval (in seconds) to wait before checking for updates
-        await asyncio.sleep(10)
-
-
 @bot.event
 async def on_ready():
+    synced = await bot.tree.sync()
+    print(len(synced))
     print(f'We have logged in as {bot.user}')
 
     for guild in bot.guilds:
