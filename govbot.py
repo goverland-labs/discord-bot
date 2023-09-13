@@ -73,7 +73,7 @@ async def send_message_to_discord(channel, title, link):
     await channel.send(message)
 
 
-async def listen_to_url(session_id):
+async def listen_to_url(session_id, channel):
 
     while True:
         if listening:
@@ -295,20 +295,18 @@ async def on_ready():
 
     for guild in bot.guilds:
         server_id = guild.id
+        text_channels = guild.text_channels
 
-        # Get the channel where the bot is connected (assuming it is only connected to one channel)
-        global channel
-        channel = bot.get_channel(bot.guilds[0].text_channels[0].id)
+        for channel in text_channels:
 
-        server_id = guild.id
-        query = "SELECT distinct(sessionid) FROM subs WHERE serverid = ?"
-        res = cur.execute(query, (server_id,))
-        data = res.fetchone()
+            query = "SELECT distinct(sessionid) FROM subs WHERE serverid = ?"
+            res = cur.execute(query, (server_id,))
+            data = res.fetchone()
 
-        if data:
-            session_id = data[0]
-            print(session_id)
-            bot.loop.create_task(listen_to_url(session_id))
+            if data:
+                session_id = data[0]
+                print(session_id)
+                bot.loop.create_task(listen_to_url(session_id, channel))
 
 if __name__ == "__main__":
     # Replace this with your actual Discord bot token
