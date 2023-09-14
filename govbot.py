@@ -67,9 +67,9 @@ def mark_item_as_read(feed_id, session_id):
         return False
 
 
-async def send_message_to_discord(channel, title, link):
+async def send_message_to_discord(channel, title, space, link):
     print(channel)
-    message = f"New proposal: [{title}]({link})"
+    message = f"New proposal on {space}: [{title}]({link})"
     await channel.send(message)
 
 
@@ -90,13 +90,14 @@ async def listen_to_url(session_id, channel):
                 if provided_datetime_obj > one_day_ago:
                     title = data["proposal"][0]["title"]
                     link = data["proposal"][0]["link"]
+                    space = data["proposal"][0]["dao"]["alias"]
                     formatted_url = urllib.parse.quote(link, safe=':/#')
                     feed_id = data['id'][0]
 
                     # print(f"New data: {title}")
 
                     # Send the new event message to Discord chat
-                    await send_message_to_discord(channel, title, formatted_url)
+                    await send_message_to_discord(channel, title, space, formatted_url)
 
                     mark_item_as_read(feed_id, session_id)
                 else:
@@ -312,5 +313,6 @@ if __name__ == "__main__":
     # Replace this with your actual Discord bot token
     token = discordtoken
     bot.run(token)
+
 
 
