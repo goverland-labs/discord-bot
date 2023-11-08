@@ -1,0 +1,1 @@
+docker run goverland-discord-bot
