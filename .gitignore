@@ -50,6 +50,7 @@ coverage.xml
 *.py,cover
 .hypothesis/
 .pytest_cache/
+.DS_Store
 
 # Translations
 *.mo
@@ -130,3 +131,6 @@ dmypy.json
 
 # VSCode
 .vscode
+
+# Local sqlite
+goverland.sqlite

@@ -2,14 +2,41 @@
 
 The bot allows to subscribe for updates from different DAOs.
 
-## Configuration
+## Prerequisites
 
-A Python 3.10+ environment.
-
+- Python 3.10+
+- Install [virtualenv](https://virtualenv.pypa.io/en/latest/index.html) 
+```bash
+pip3 install virtualenv
 ```
-python3 -m venv .venv
+- Create a virtual env and activate it
+```bash
+python3 -m virtualenv .venv
 source .venv/bin/activate
+```
+- Install all dependencies
+```bash
 pip install -r requirements.txt
+```
+
+## Local Development
+
+1. Create a local sqlite database
+```
+python -m src.database.create_db
+```
+2. Rename `.env.example` to `.env` and define a Discord token
+3. Run the bot
+```
+python -m src.run
+```
+
+## Code Formatting
+
+In order to format the code, run:
+
+```bash
+black src
 ```
 
 ### Code contribution
@@ -22,14 +49,3 @@ pip install -r requirements.txt
 
 TODO: update after docker file is ready
 
-### Create a local sqlite database
-
-```
-python -m src.database.create_db
-```
-
-### Run the bot
-
-```
-python -m src.run
-```
