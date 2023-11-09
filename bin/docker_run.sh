@@ -1,1 +1,1 @@
-docker run goverland-discord-bot
+docker run --env-file=.env goverland-discord-bot

@@ -12,7 +12,7 @@ class Server(Base):
     session_id = Column(String, nullable=False)
 
     def __repr__(self):
-        return "<Server(server_id='%s', session_id)>" % (self.space_id, self.server_id)
+        return "<Server(server_id='%s', session_id)>" % (self.server_id)
 
     @staticmethod
     def by(server_id: str):

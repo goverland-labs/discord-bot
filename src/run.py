@@ -1,12 +1,16 @@
-from dotenv import dotenv_values
+import os
+from dotenv import load_dotenv
 import discord
 from discord.ext import commands
 from src.commands import test, hybrid
+
+load_dotenv()
 
 
 def main():
     intents = discord.Intents.default()
     intents.message_content = True
+    intents.members = True
 
     bot = commands.Bot(command_prefix="$", intents=intents)
     bot.add_command(test)
@@ -21,8 +25,7 @@ def main():
         for channel in bot.get_all_channels():
             print(channel)
 
-    config = dotenv_values(".env")
-    bot.run(config["DISCORD_TOKEN"])
+    bot.run(os.environ["DISCORD_TOKEN"])
 
 
 if __name__ == "__main__":
