@@ -1,26 +1,80 @@
-# Discord_bot
-Fetches data from goverland server and sends to discord channels. Used for further promotion of our solution
+# Goverland Discord Bot
 
-Principles of work:
+The bot allows to subscribe for updates from different DAOs.
 
-Bot can be added on any server.
+## Prerequisites
 
-Once added, user has a number of commands available:
+- Python 3.11+
+- Install [virtualenv](https://virtualenv.pypa.io/en/latest/index.html) 
+```bash
+pip3 install virtualenv
+```
+- Create a virtual env and activate it
+```bash
+python3 -m virtualenv .venv
+source .venv/bin/activate
+```
+- Install all dependencies
+```bash
+pip install -r requirements.txt
+```
 
--Gov_sub initiates creation of session_id for each server plus adds server_id and session_id to local databse for further use. This is the first command that user needs to call to start using the service
+## Local Development
 
--add_dao allows user to add subscription to a particular dao by specifying correct dao id such as "868f59db-4e45-498f-a87a-3efa9db0c92c"
+1. Create a local sqlite database
+```
+python -m src.database.create_db
+```
+2. Rename `.env.example` to `.env` and define a Discord token
+3. Run the bot
+```
+python -m src.run
+```
 
--Gov_start initiates sending of proposals as per subscribed DAOs to the server. Sent messages contain proposals name and link to snapshot. Once proposal is sent, it is marked as read for a particular session_id. Service only sends proposals which are posted within a day not to inform about aold ones
+## Run Docker Locally
 
--Gov_stop stops feed of proposals
+If yo want to test a Docker image, run the following:
 
-Python code dbcreate.ipynb needs to be run once on the local machine to create db which will be used then by bot. 
+1. Build a Docker image
+```bash
+./bin/docker_build.sh
+```
+2. Start the Docker image
+```bash
+./bin/docker_run.sh
+```
 
-# Pip install
+## Code Linting
 
-discord-py-interatcions
+We lint code with flake8:
 
-discord-components
+```bash
+flake8 src --count --select=E9,F63,F7,F82 --show-source --statistics
+flake8 src --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+```
 
-discord.py
+## Code Formatting
+
+In order to format the code, run:
+
+```bash
+black src
+```
+
+## Testing
+
+We test code using pytest:
+```bash
+pytest
+```
+
+### Code contribution
+
+1. Create an issue describing a bug or feature
+2. Fork the repository and create a pull request to the `main` branch
+3. Please use [Black](https://pypi.org/project/black/) code formatter
+
+## Usage
+
+TODO: update after docker file is ready
+
