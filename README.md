@@ -18,6 +18,10 @@ source .venv/bin/activate
 ```bash
 pip install -r requirements.txt
 ```
+- Install pre-commit:
+```bash
+pre-commit install
+```
 
 ## Local Development
 
