@@ -5,7 +5,7 @@ The bot allows to subscribe for updates from different DAOs.
 ## Prerequisites
 
 - Python 3.11+
-- Install [virtualenv](https://virtualenv.pypa.io/en/latest/index.html) 
+- Install [virtualenv](https://virtualenv.pypa.io/en/latest/index.html)
 ```bash
 pip3 install virtualenv
 ```
@@ -77,4 +77,3 @@ pytest
 ## Usage
 
 TODO: update after docker file is ready
-

@@ -11,4 +11,4 @@ ADD src src
 
 HEALTHCHECK CMD discordhealthcheck || exit 1
 
-CMD ["python", "-m", "src.run"] 
+CMD ["python", "-m", "src.run"]
