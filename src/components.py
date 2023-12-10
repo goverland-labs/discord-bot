@@ -1,9 +1,7 @@
 import interactions
 
 ButtonHello = interactions.Button(
-    style=interactions.ButtonStyle.PRIMARY,
-    label="hello world!",
-    custom_id="hello"
+    style=interactions.ButtonStyle.PRIMARY, label="hello world!", custom_id="hello"
 )
 
 # EXAMPLE OF CUSTOM UI
