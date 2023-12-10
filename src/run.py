@@ -83,7 +83,10 @@ def main():
         description='👩🏻‍💻🔜Read basic info about Goverland.',
     )
     async def info(ctx):
-        message = 'About Goverland: \n🔜🐣  (Copyright, Privacy Policy and Terms of Service)'
+        message = '''About Goverland: \n🔜🐣  (Copyright, Privacy Policy and Terms of Service):
+About: https://www.goverland.xyz
+Privacy Policy: https://www.goverland.xyz/privacy
+'''
         await ctx.send(message)
 
     @bot.command(
@@ -101,6 +104,7 @@ def main():
     async def subscriptions(ctx):
         message = 'There are the results: \n🔜☕️'
         await ctx.send(message)
+        await ctx.send("https://imgur.com/gallery/x8qFLU8")
 
     bot.start()
 
