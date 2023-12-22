@@ -5,7 +5,7 @@ The bot allows to subscribe for updates from different DAOs.
 ## Prerequisites
 
 - Python 3.11+
-- Install [virtualenv](https://virtualenv.pypa.io/en/latest/index.html) 
+- Install [virtualenv](https://virtualenv.pypa.io/en/latest/index.html)
 ```bash
 pip3 install virtualenv
 ```
@@ -17,6 +17,10 @@ source .venv/bin/activate
 - Install all dependencies
 ```bash
 pip install -r requirements.txt
+```
+- Install pre-commit:
+```bash
+pre-commit install
 ```
 
 ## Local Development
@@ -68,6 +72,13 @@ We test code using pytest:
 pytest
 ```
 
+## Changelog
+
+In order to generate `CHANGELOG.md` run the following:
+```bash
+git-changelog -c conventional -o CHANGELOG.md
+```
+
 ### Code contribution
 
 1. Create an issue describing a bug or feature
@@ -77,4 +88,3 @@ pytest
 ## Usage
 
 TODO: update after docker file is ready
-
