@@ -72,6 +72,13 @@ We test code using pytest:
 pytest
 ```
 
+## Changelog
+
+In order to generate `CHANGELOG.md` run the following:
+```bash
+git-changelog -c conventional -o CHANGELOG.md
+```
+
 ### Code contribution
 
 1. Create an issue describing a bug or feature

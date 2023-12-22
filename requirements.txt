@@ -6,3 +6,4 @@ flake8==6.1.0
 pytest==7.4.3
 discord-py-interactions==4.4.0
 pre-commit
+git-changelog
